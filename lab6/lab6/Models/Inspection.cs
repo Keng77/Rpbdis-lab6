@@ -58,13 +58,13 @@ namespace lab6.Models
         [Display(Name = "Статус Исправления")]
         public string? CorrectionStatus { get; set; }
 
-        [JsonIgnore]
+        
         public virtual Enterprise Enterprise { get; set; }
 
-        [JsonIgnore]
+        
         public virtual Inspector Inspector { get; set; }
 
-        [JsonIgnore]
+        
         public virtual ViolationType ViolationType { get; set; }
     }
 }

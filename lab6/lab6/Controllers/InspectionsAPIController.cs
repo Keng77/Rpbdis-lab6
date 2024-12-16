@@ -6,7 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using lab6.Data;
 using lab6.Models;
-using Swashbuckle.AspNetCore.Annotations;  // Для аннотаций Swagger
+using Swashbuckle.AspNetCore.Annotations;
+using lab6.DTO;
+using Microsoft.AspNetCore.Mvc.Rendering;  // Для аннотаций Swagger
 
 namespace lab6.Controllers
 {
@@ -56,18 +58,34 @@ namespace lab6.Controllers
             return inspection;
         }
 
-        // PUT: api/InspectionsAPI/5
         [HttpPut("{id}")]
         [SwaggerOperation(Summary = "Обновить информацию о проверке", Description = "Обновляет информацию о проверке по ее ID.")]
         [SwaggerResponse(204, "Информация о проверке успешно обновлена")]
         [SwaggerResponse(400, "Некорректный запрос")]
         [SwaggerResponse(404, "Проверка не найдена")]
-        public async Task<IActionResult> PutInspection(int id, Inspection inspection)
+        public async Task<IActionResult> PutInspection(int id, InspectionDto inspectionDto)
         {
-            if (id != inspection.InspectionId)
+            if (id != inspectionDto.InspectionId)
             {
                 return BadRequest();
             }
+
+            // Преобразуем DTO в модель
+            var inspection = new Inspection
+            {
+                InspectionId = inspectionDto.InspectionId,
+                InspectorId = inspectionDto.InspectorId,
+                EnterpriseId = inspectionDto.EnterpriseId,
+                ViolationTypeId = inspectionDto.ViolationTypeId,
+                InspectionDate = inspectionDto.InspectionDate,
+                ProtocolNumber = inspectionDto.ProtocolNumber,
+                ResponsiblePerson = inspectionDto.ResponsiblePerson,
+                PenaltyAmount = inspectionDto.PenaltyAmount,
+                PaymentDeadline = inspectionDto.PaymentDeadline,
+                CorrectionDeadline = inspectionDto.CorrectionDeadline,
+                PaymentStatus = inspectionDto.PaymentStatus,
+                CorrectionStatus = inspectionDto.CorrectionStatus
+            };
 
             _context.Entry(inspection).State = EntityState.Modified;
 
@@ -90,12 +108,27 @@ namespace lab6.Controllers
             return NoContent();
         }
 
-        // POST: api/InspectionsAPI
         [HttpPost]
         [SwaggerOperation(Summary = "Создать новую проверку", Description = "Создает новую проверку в базе данных.")]
         [SwaggerResponse(201, "Проверка успешно создана", typeof(Inspection))]
-        public async Task<ActionResult<Inspection>> PostInspection(Inspection inspection)
+        public async Task<ActionResult<Inspection>> PostInspection(CreateInspectionDto inspectionDto)
         {
+            // Преобразуем DTO в модель
+            var inspection = new Inspection
+            {
+                InspectorId = inspectionDto.InspectorId,
+                EnterpriseId = inspectionDto.EnterpriseId,
+                ViolationTypeId = inspectionDto.ViolationTypeId,
+                InspectionDate = inspectionDto.InspectionDate,
+                ProtocolNumber = inspectionDto.ProtocolNumber,
+                ResponsiblePerson = inspectionDto.ResponsiblePerson,
+                PenaltyAmount = inspectionDto.PenaltyAmount,
+                PaymentDeadline = inspectionDto.PaymentDeadline,
+                CorrectionDeadline = inspectionDto.CorrectionDeadline,
+                PaymentStatus = inspectionDto.PaymentStatus,
+                CorrectionStatus = inspectionDto.CorrectionStatus
+            };
+
             _context.Inspections.Add(inspection);
             await _context.SaveChangesAsync();
 
@@ -125,5 +158,6 @@ namespace lab6.Controllers
         {
             return _context.Inspections.Any(e => e.InspectionId == id);
         }
+
     }
 }
