@@ -1,34 +1,41 @@
+using lab6.Data;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.EntityFrameworkCore;
 
-namespace lab6
+var builder = WebApplication.CreateBuilder(args);
+
+// Получаем строку подключения
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DBConnection' not found.");
+
+// Добавляем DbContext для работы с базой данных
+builder.Services.AddDbContext<InspectionsDbContext>(options =>
+    options.UseSqlServer(connectionString));
+
+// Добавляем сервисы для работы с контроллерами и представлениями
+builder.Services.AddControllersWithViews(); // Для работы с контроллерами и представлениями
+
+// Настройка Swagger с включением аннотаций
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    public class Program
-    {
-        public static void Main(string[] args)
-        {
-            var builder = WebApplication.CreateBuilder(args);
+    c.EnableAnnotations(); // Включаем аннотации Swagger
+});
 
-            // Add services to the container.
+var app = builder.Build();
 
-            builder.Services.AddControllers();
-            // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-            builder.Services.AddOpenApi();
-
-            var app = builder.Build();
-
-            // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.MapOpenApi();
-            }
-
-            app.UseHttpsRedirection();
-
-            app.UseAuthorization();
-
-
-            app.MapControllers();
-
-            app.Run();
-        }
-    }
+// Конфигурация HTTP request pipeline
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger(); // Генерация Swagger JSON
+    app.UseSwaggerUI(); // Интерфейс для взаимодействия с API через Swagger
 }
+
+app.UseAuthorization();
+
+// Маршруты для контроллеров
+app.MapControllerRoute(
+    name: "default",
+    pattern: "{controller=Inspections}/{action=index}/{id?}"); // Указываем, что по умолчанию будет вызываться метод Index в контроллере Inspections
+
+app.Run();
