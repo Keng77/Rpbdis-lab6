@@ -1,5 +1,6 @@
 ﻿using lab6.Controllers;
 using lab6.Data;
+using lab6.DTO;
 using lab6.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -100,14 +101,19 @@ namespace Tests
         [Fact]
         public async Task PostInspection_CreatesInspection()
         {
-            var newInspection = new Inspection { ProtocolNumber = "PN123" };
-            _mockInspectionSet.Setup(m => m.AddAsync(newInspection, default)).ReturnsAsync((Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<Inspection>)null);
+            // Создаем объект DTO вместо Inspection
+            var newInspectionDto = new CreateInspectionDto { ProtocolNumber = "PN123" };
 
-            var result = await _inspectionsController.PostInspection(newInspection);
+            // Настраиваем мок для создания Inspection из DTO
+            var newInspection = new Inspection { ProtocolNumber = newInspectionDto.ProtocolNumber };
+            _mockInspectionSet.Setup(m => m.AddAsync(It.IsAny<Inspection>(), default)).ReturnsAsync((Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry<Inspection>)null);
+
+            // Вызываем метод с DTO
+            var result = await _inspectionsController.PostInspection(newInspectionDto);
 
             var createdAtActionResult = Assert.IsType<CreatedAtActionResult>(result.Result);
             Assert.Equal("GetInspection", createdAtActionResult.ActionName);
-            Assert.Equal(newInspection, createdAtActionResult.Value);
+            Assert.Equal(newInspection.ProtocolNumber, ((Inspection)createdAtActionResult.Value).ProtocolNumber);
         }
 
         [Fact]
