@@ -28,7 +28,7 @@ jobs:
         dotnet-version: ${{ env.DOTNET_VERSION }}
 
     - name: Install dependencies
-    - run: dotnet restore lab6/Lab6.sln
+      run: dotnet restore lab6/Lab6.sln
       
     - name: Build
       run: dotnet build --configuration Release --no-restore
