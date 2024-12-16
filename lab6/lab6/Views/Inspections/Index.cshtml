@@ -1,0 +1,232 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Управление Проверками</title>
+</head>
+<body>
+    <h1>Управление Проверками</h1>
+
+    <h2>Добавить новую проверку</h2>
+    <form id="createInspectionForm">
+        <label for="inspectorId">Инспектор ID:</label>
+        <input type="number" id="inspectorId" required>
+        <br>
+        <label for="enterpriseId">Предприятие ID:</label>
+        <input type="number" id="enterpriseId" required>
+        <br>
+        <label for="violationTypeId">Тип нарушения ID:</label>
+        <input type="number" id="violationTypeId" required>
+        <br>
+        <label for="inspectionDate">Дата проверки:</label>
+        <input type="date" id="inspectionDate" required>
+        <br>
+        <label for="protocolNumber">Номер протокола:</label>
+        <input type="text" id="protocolNumber" maxlength="50">
+        <br>
+        <label for="responsiblePerson">Ответственный:</label>
+        <input type="text" id="responsiblePerson" maxlength="100">
+        <br>
+        <label for="penaltyAmount">Задолженность:</label>
+        <input type="number" id="penaltyAmount" required step="0.01">
+        <br>
+        <label for="paymentDeadline">Дедлайн оплаты:</label>
+        <input type="date" id="paymentDeadline" required>
+        <br>
+        <label for="correctionDeadline">Дедлайн исправления:</label>
+        <input type="date" id="correctionDeadline" required>
+        <br>
+        <label for="paymentStatus">Статус оплаты:</label>
+        <input type="text" id="paymentStatus" required>
+        <br>
+        <label for="correctionStatus">Статус исправления:</label>
+        <input type="text" id="correctionStatus" required>
+        <br>
+        <button type="submit">Добавить</button>
+    </form>
+
+    <h2>Список проверок</h2>
+    <table id="inspectionsTable" border="1">
+        <tr>
+            <th>ID</th>
+            <th>Инспектор</th>
+            <th>Предприятие</th>
+            <th>Тип нарушения</th>
+            <th>Дата проверки</th>
+            <th>Номер протокола</th>
+            <th>Ответственный</th>
+            <th>Задолженность</th>
+            <th>Дедлайн оплаты</th>
+            <th>Дедлайн исправления</th>
+            <th>Статус оплаты</th>
+            <th>Статус исправления</th>
+            <th>Действия</th>
+        </tr>
+    </table>
+
+    <script>
+        // Функция для отправки GET-запроса на получение списка проверок
+        function getInspections() {
+            fetch('/api/inspectionsapi') // API URL для получения списка проверок
+                .then(response => response.json())
+                .then(data => {
+                    const table = document.getElementById('inspectionsTable');
+                    table.innerHTML = `
+                        <tr>
+                            <th>ID</th>
+                            <th>Дата проверки</th>
+                            <th>Номер протокола</th>
+                            <th>Ответственный</th>
+                            <th>Задолженность</th>
+                            <th>Дедлайн оплаты</th>
+                            <th>Дедлайн исправления</th>
+                            <th>Статус оплаты</th>
+                            <th>Статус исправления</th>
+                            <th>Действия</th>
+                        </tr>
+                    `;
+                    data.forEach(inspection => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${inspection.inspectionId}</td>
+                            <td>${inspection.inspectionDate}</td>
+                            <td>${inspection.protocolNumber}</td>
+                            <td>${inspection.responsiblePerson}</td>
+                            <td>${inspection.penaltyAmount}</td>
+                            <td>${inspection.paymentDeadline}</td>
+                            <td>${inspection.correctionDeadline}</td>
+                            <td>${inspection.paymentStatus}</td>
+                            <td>${inspection.correctionStatus}</td>
+                            <td>
+                                <button onclick="editInspection(${inspection.inspectionId}, '${inspection.inspectorId}', '${inspection.enterpriseId}', '${inspection.violationTypeId}', '${inspection.inspectionDate}', '${inspection.protocolNumber}', '${inspection.responsiblePerson}', '${inspection.penaltyAmount}', '${inspection.paymentDeadline}', '${inspection.correctionDeadline}', '${inspection.paymentStatus}', '${inspection.correctionStatus}')">Редактировать</button>
+                                <button onclick="deleteInspection(${inspection.inspectionId})">Удалить</button>
+                            </td>
+                        `;
+                        table.appendChild(row);
+                    });
+                });
+        }
+
+        // Функция для отправки POST-запроса на создание проверки
+        function createInspection(event) {
+            event.preventDefault();
+            const inspectorId = document.getElementById('inspectorId').value;
+            const enterpriseId = document.getElementById('enterpriseId').value;
+            const violationTypeId = document.getElementById('violationTypeId').value;
+            const inspectionDate = document.getElementById('inspectionDate').value;
+            const protocolNumber = document.getElementById('protocolNumber').value;
+            const responsiblePerson = document.getElementById('responsiblePerson').value;
+            const penaltyAmount = document.getElementById('penaltyAmount').value;
+            const paymentDeadline = document.getElementById('paymentDeadline').value;
+            const correctionDeadline = document.getElementById('correctionDeadline').value;
+            const paymentStatus = document.getElementById('paymentStatus').value;
+            const correctionStatus = document.getElementById('correctionStatus').value;
+
+            fetch('/api/inspectionsapi', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    inspectorId: inspectorId,
+                    enterpriseId: enterpriseId,
+                    violationTypeId: violationTypeId,
+                    inspectionDate: inspectionDate,
+                    protocolNumber: protocolNumber,
+                    responsiblePerson: responsiblePerson,
+                    penaltyAmount: penaltyAmount,
+                    paymentDeadline: paymentDeadline,
+                    correctionDeadline: correctionDeadline,
+                    paymentStatus: paymentStatus,
+                    correctionStatus: correctionStatus
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Проверка добавлена:', data);
+                document.getElementById('createInspectionForm').reset();
+                getInspections(); // Обновляем список проверок
+            });
+        }
+
+        // Функция для отправки DELETE-запроса на удаление проверки
+        function deleteInspection(inspectionId) {
+            fetch(`/api/inspectionsapi/${inspectionId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                console.log('Проверка удалена:', inspectionId);
+                getInspections(); // Обновляем список проверок
+            });
+        }
+
+        // Функция для отправки PUT-запроса на обновление проверки
+        function updateInspection(inspectionId, inspectorId, enterpriseId, violationTypeId, inspectionDate, protocolNumber, responsiblePerson, penaltyAmount, paymentDeadline, correctionDeadline, paymentStatus, correctionStatus) {
+            const updatedInspection = {
+                inspectionId,
+                inspectorId,
+                enterpriseId,
+                violationTypeId,
+                inspectionDate,
+                protocolNumber,
+                responsiblePerson,
+                penaltyAmount,
+                paymentDeadline,
+                correctionDeadline,
+                paymentStatus,
+                correctionStatus
+            };
+
+            fetch(`/api/inspectionsapi/${inspectionId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(updatedInspection)
+            })
+            .then(response => {
+                console.log('Проверка обновлена:', updatedInspection);
+                getInspections(); // Обновляем список проверок
+            });
+        }
+
+        // Функция для заполнения формы редактирования проверки
+        function editInspection(inspectionId, inspectorId, enterpriseId, violationTypeId, inspectionDate, protocolNumber, responsiblePerson, penaltyAmount, paymentDeadline, correctionDeadline, paymentStatus, correctionStatus) {
+            document.getElementById('inspectorId').value = inspectorId;
+            document.getElementById('enterpriseId').value = enterpriseId;
+            document.getElementById('violationTypeId').value = violationTypeId;
+            document.getElementById('inspectionDate').value = inspectionDate;
+            document.getElementById('protocolNumber').value = protocolNumber;
+            document.getElementById('responsiblePerson').value = responsiblePerson;
+            document.getElementById('penaltyAmount').value = penaltyAmount;
+            document.getElementById('paymentDeadline').value = paymentDeadline;
+            document.getElementById('correctionDeadline').value = correctionDeadline;
+            document.getElementById('paymentStatus').value = paymentStatus;
+            document.getElementById('correctionStatus').value = correctionStatus;
+
+            const updateButton = document.createElement('button');
+            updateButton.textContent = 'Обновить';
+            updateButton.onclick = function () {
+                updateInspection(inspectionId, inspectorId, enterpriseId, violationTypeId, inspectionDate, protocolNumber, responsiblePerson, penaltyAmount, paymentDeadline, correctionDeadline, paymentStatus, correctionStatus);
+            };
+
+            const form = document.getElementById('createInspectionForm');
+            const submitButton = form.querySelector('[type="submit"]');
+            if (submitButton) {
+                form.removeChild(submitButton);
+            }
+            form.appendChild(updateButton);
+        }
+
+        // Загрузка списка проверок при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function () {
+            getInspections();
+        });
+
+        // Добавление обработчика события отправки формы
+        const createInspectionForm = document.getElementById('createInspectionForm');
+        createInspectionForm.addEventListener('submit', createInspection);
+    </script>
+</body>
+</html>
